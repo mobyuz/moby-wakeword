@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Moby wake word manifest row",
+  "description": "One JSON object per line (JSONL). Mirrors mobyww.data.manifest.Row; a test keeps the two in sync. Cross-row rules (duplicates, speaker leakage, consent) are enforced by mobyww-validate, not by this schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id", "path", "sha256", "label", "phrase", "language", "source", "source_name",
+    "license", "speaker", "split", "duration_s", "sample_rate"
+  ],
+  "properties": {
+    "id": {"type": "string", "minLength": 1},
+    "path": {"type": "string", "pattern": "^[^/\\\\:][^\\\\:]*\\.[wW][aA][vV]$", "description": "Relative to the data root, forward slashes, no '..'."},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "label": {"enum": ["wake", "negative", "hard_negative", "ambient", "silence"]},
+    "phrase": {"type": "string"},
+    "language": {"enum": ["uz", "ru", "en", "other", "none"]},
+    "source": {"enum": ["recorded", "tts", "public_dataset", "other"]},
+    "source_name": {"type": "string", "minLength": 1},
+    "license": {"type": "string", "minLength": 1, "description": "SPDX id or named license. 'unknown' and similar values are rejected by the validator."},
+    "speaker": {"type": "string", "minLength": 1, "description": "Pseudonym. 'n/a' for non-speech. Never a real name."},
+    "split": {"enum": ["train", "val", "test", "unassigned"]},
+    "duration_s": {"type": "number", "exclusiveMinimum": 0},
+    "sample_rate": {"type": "integer", "minimum": 1},
+    "consent_id": {"type": "string", "description": "Required when source is 'recorded'."},
+    "distance_cm": {"type": ["integer", "null"], "description": "Normally 30, 100 or 300."},
+    "volume": {"enum": ["", "quiet", "normal", "loud"]},
+    "room": {"type": "string"},
+    "device": {"type": "string"},
+    "recorded_on": {"type": "string", "description": "ISO date."},
+    "mode": {"enum": ["prompted", "free", "none"]}
+  }
+}
