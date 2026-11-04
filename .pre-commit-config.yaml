@@ -1,0 +1,11 @@
+# Optional: the same check through the pre-commit framework. The plain git hook in .githooks/
+# works without installing anything extra.
+repos:
+  - repo: local
+    hooks:
+      - id: mobyww-guard
+        name: privacy guard (no recordings, consent, identities or weights)
+        entry: python -m mobyww.guard --staged
+        language: system
+        pass_filenames: false
+        always_run: true

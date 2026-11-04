@@ -1,0 +1,9 @@
+#!/bin/sh
+# Blocks commits that contain recordings, consent files, speaker identities or weights.
+# Enable once per clone: git config core.hooksPath .githooks   (just setup does this)
+ROOT=$(git rev-parse --show-toplevel) || exit 1
+if [ -n "$MOBYWW_PYTHON" ]; then PY="$MOBYWW_PYTHON"
+elif [ -x "$ROOT/.venv/Scripts/python.exe" ]; then PY="$ROOT/.venv/Scripts/python.exe"
+elif [ -x "$ROOT/.venv/bin/python" ]; then PY="$ROOT/.venv/bin/python"
+else PY=python3; fi
+PYTHONPATH="$ROOT/src${PYTHONPATH:+:$PYTHONPATH}" exec "$PY" -m mobyww.guard --staged --root "$ROOT"

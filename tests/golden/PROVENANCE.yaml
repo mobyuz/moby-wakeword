@@ -1,0 +1,3 @@
+# Every audio file or model under tests/golden/ must be listed here with its license and origin.
+# Only our own recordings (with consent) or synthetic audio may be listed. Empty until W5.
+files: {}
