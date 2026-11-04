@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools==80.9.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "moby-wakeword"
+version = "0.0.0"
+description = "Training, evaluation and export of the Moby wake word model (microWakeWord)."
+readme = "README.md"
+# microWakeWord declares requires-python >=3.10; its notebook says 3.10. TensorFlow 2.20 (the
+# version proven in docs/upstream-toolchain.md) ships Windows wheels for 3.12, so 3.12 is pinned.
+requires-python = ">=3.12,<3.13"
+license = "GPL-3.0-only"
+license-files = ["LICENSE"]
+dependencies = ["PyYAML==6.0.3"]
+
+[project.optional-dependencies]
+# Real microphone capture. Tests never need it: capture is an injectable interface.
+record = ["sounddevice==0.5.2"]
+
+[project.scripts]
+mobyww-validate = "mobyww.data.validate:main"
+mobyww-record = "mobyww.recording.cli:main"
+mobyww-guard = "mobyww.guard:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+mobyww = ["py.typed"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "S", "PT", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src", "tests", "scripts"]
+mypy_path = "src"
+
+[[tool.mypy.overrides]]
+module = ["sounddevice"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+pythonpath = ["src"]

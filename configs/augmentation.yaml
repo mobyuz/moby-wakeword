@@ -1,0 +1,15 @@
+# Planned augmentation for W2 (not implemented yet). Seeds are fixed and logged.
+status: planned-w2
+seed: 2024
+snr_db: {min: 0, max: 30}
+rir:
+  # Only openly licensed sets that pass docs/licenses.md. None is approved yet.
+  sets: []
+gain_db: {min: -12, max: 6}
+time_shift_ms: {min: -100, max: 100}
+device_path:
+  # Simulate what the model sees on the robot: INMP441 24-bit data (in a 32-bit slot)
+  # reduced to 16 bit, plus a mild low-pass. The shift and scale are NOT decided here:
+  # they must equal the firmware conversion (see docs/integration-contract.md, open item).
+  bit_reduction: {from_bits: 24, to_bits: 16, shift: TBD-F4}
+  lowpass: {kind: mild, cutoff_hz: TBD}

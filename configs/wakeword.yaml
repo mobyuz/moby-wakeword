@@ -1,0 +1,41 @@
+# Wake word candidates. The owner confirms the final phrase (plan, "Ochiq qarorlar").
+# All candidates are trained and compared in one report (W4). None is chosen yet.
+status: candidates-awaiting-owner-confirmation
+candidates:
+  - id: hey_moby
+    phrase: "hey moby"
+    languages: [en, uz, ru]
+    initial: true
+  - id: okay_moby
+    phrase: "okay moby"
+    languages: [en, uz, ru]
+  - id: moby
+    phrase: "moby"
+    languages: [en, uz, ru]
+    note: "Short words usually false-trigger more (plan)."
+
+# Hard negatives: always labelled negative, never positive.
+hard_negatives:
+  - "mobil"      # uz/ru, very common word
+  - "mobile"
+  - "mobi"
+  - "moby dick"
+  - "hey mom"
+  - "hey bobby"
+  - "hey toby"
+
+audio:
+  sample_rate_hz: 16000
+  channels: 1
+  sample_width_bits: 16
+  clip_seconds: 2.5      # guided recording length per prompt
+
+recording:
+  distances_cm: [30, 100, 300]
+  volumes: [quiet, normal, loud]
+  repeats_per_cell: 3
+
+seeds:
+  split: 1337
+  augmentation: 2024
+  training: 4242

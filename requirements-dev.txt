@@ -1,0 +1,8 @@
+# Tooling for lint, types and tests (the .venv). The training stack is separate: see
+# requirements-train.txt and docs/upstream-toolchain.md.
+PyYAML==6.0.3
+types-PyYAML==6.0.12.20261103
+ruff==0.17.3
+mypy==2.4.1
+pytest==9.2.0
+pytest-cov==7.1.0
