@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Lint, types, tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - name: Install the tooling
+        run: |
+          python -m pip install -r requirements-dev.txt
+          python -m pip install -e . --no-deps
+      - name: Lint
+        run: |
+          python -m ruff check .
+          python -m ruff format --check .
+      - name: Type check
+        run: python -m mypy
+      - name: Unit tests
+        run: python -m pytest
+      - name: Validate the small synthetic manifest sample
+        run: python -m mobyww.data.sample
+      - name: Privacy guard on every tracked path
+        run: python -m mobyww.guard --tracked
+
+  upstream-smoke:
+    # Real microWakeWord run on synthetic tones (scripts/upstream_smoke.py). Proven on Windows 11
+    # with Python 3.12 only; the Linux run here is not proven yet, so a failure does not block.
+    name: Upstream toolchain smoke run
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - name: Install the training stack
+        run: python -m pip install -r requirements-train.txt
+      - name: Smoke run
+        run: python scripts/upstream_smoke.py --workdir "$RUNNER_TEMP/smoke" --steps 40
