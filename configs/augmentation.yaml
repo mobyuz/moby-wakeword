@@ -9,7 +9,8 @@ gain_db: {min: -12, max: 6}
 time_shift_ms: {min: -100, max: 100}
 device_path:
   # Simulate what the model sees on the robot: INMP441 24-bit data (in a 32-bit slot)
-  # reduced to 16 bit, plus a mild low-pass. The shift and scale are NOT decided here:
-  # they must equal the firmware conversion (see docs/integration-contract.md, open item).
-  bit_reduction: {from_bits: 24, to_bits: 16, shift: TBD-F4}
+  # reduced to 16 bit, plus a mild low-pass. These values copy the firmware conversion in
+  # moby-firmware main/moby_pcm.h (see docs/integration-contract.md): take the left slot,
+  # shift the 32-bit slot right by 16 with no rounding or dither, gain 256/256 with saturation.
+  bit_reduction: {slot_bits: 32, from_bits: 24, to_bits: 16, shift: 16, gain_q8: 256, channel: left}
   lowpass: {kind: mild, cutoff_hz: TBD}
