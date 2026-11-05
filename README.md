@@ -2,7 +2,7 @@
 
 Robot uyg'otuvchi so'zni ("Hey Moby") o'zi, ESP32-S3 ustida eshitishi kerak: ovoz u uyg'ongunga qadar robotdan tashqariga chiqmaydi. Bu repozitoriy [microWakeWord](https://github.com/OHF-Voice/micro-wake-word) bilan model o'qitish, baholash va eksport qilish uchun. Robot kodi bu yerda yo'q.
 
-**Holat: W0 va W1 tugagan. Hech qanday model o'qitilmagan, wake word aniqligi o'lchanmagan.** Upstream asboblar zanjirining kichik sintetik namunada ishlashi isbotlangan ([hisobot](docs/upstream-toolchain.md)), lekin bu nutq modeli emas. So'z nomzodlari va o'tish chegaralari egasi tasdig'ini kutmoqda.
+**Holat: W0 va W1 tugagan. Hech qanday model o'qitilmagan, wake word aniqligi o'lchanmagan.** Upstream asboblar zanjirining kichik sintetik namunada ishlashi isbotlangan ([hisobot](docs/upstream-toolchain.md)), lekin bu nutq modeli emas. Ibora `hey moby` (egasi 2026-11-05 da tanladi). O'tish chegaralari va rozilik matni egasi tasdig'ini kutmoqda.
 
 ## Nima bor
 

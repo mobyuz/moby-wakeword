@@ -16,7 +16,7 @@ Har natija o'zining test hajmi (klip soni, ovoz egalari soni, soat) bilan berila
 | Model resursi | hajm (KB), tensor arena hajmi, operatsiyalar soni, TFLite Micro qo'llab-quvvatlamaydigan operatsiyalar |
 | CPU yuklamasi, quvvat | **faqat haqiqiy platada o'lchanadi**; o'lchanmaguncha hisobotda belgilangan bo'sh joy ("unmeasured") turadi |
 
-Nomzodlar (`hey moby`, `okay moby`, `moby`) bitta hisobotda, bir xil ma'lumot va metrikalar bilan taqqoslanadi. Qisqa so'z odatda ko'proq yolg'on uyg'otadi (reja); bu faraz, natija emas.
+Egasi 2026-11-05 da `hey moby` ni tanladi, shuning uchun faqat shu ibora baholanadi; boshqa nomzodlar taqqoslanmaydi.
 
 ## To'plamlar
 

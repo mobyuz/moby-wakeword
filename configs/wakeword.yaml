@@ -1,18 +1,11 @@
-# Wake word candidates. The owner confirms the final phrase (plan, "Ochiq qarorlar").
-# All candidates are trained and compared in one report (W4). None is chosen yet.
-status: candidates-awaiting-owner-confirmation
+# The wake phrase. The owner chose "hey moby" on 2026-11-05, so only it is recorded and trained;
+# the other plan candidates ("okay moby", "moby") were not chosen and are not compared.
+status: chosen-by-owner
 candidates:
   - id: hey_moby
     phrase: "hey moby"
     languages: [en, uz, ru]
     initial: true
-  - id: okay_moby
-    phrase: "okay moby"
-    languages: [en, uz, ru]
-  - id: moby
-    phrase: "moby"
-    languages: [en, uz, ru]
-    note: "Short words usually false-trigger more (plan)."
 
 # Hard negatives: always labelled negative, never positive.
 hard_negatives:
