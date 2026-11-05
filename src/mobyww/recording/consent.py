@@ -23,9 +23,11 @@ Moby wake word recordings - consent (version {CONSENT_TEXT_VERSION})
 
 I agree that short audio clips of my voice are recorded to train and evaluate the Moby wake
 word model. My name is not stored with the clips, only a pseudonym. The clips and this record
-stay on the project's own machines and are never published. I may withdraw at any time and ask
-for my clips to be deleted (see docs/privacy.md). A model already trained on the clips cannot
-be un-trained, but it will not be retrained on them after I withdraw.
+stay on the project's own machines and are never published. A model trained from the clips may
+be published under the project's open-source license; the clips themselves are not. I may
+withdraw at any time and ask for my clips to be deleted (see docs/privacy.md). A model already
+trained on the clips cannot be un-trained, but it will not be retrained on them after I
+withdraw.
 """
 
 
