@@ -2,6 +2,8 @@ set windows-shell := ["powershell.exe", "-NoLogo", "-NoProfile", "-Command"]
 
 py := if os() == "windows" { ".venv/Scripts/python.exe" } else { ".venv/bin/python" }
 
+train_py := if os() == "windows" { ".venv-train/Scripts/python.exe" } else { ".venv-train/bin/python" }
+
 setup:
     python -m venv .venv
     {{py}} -m pip install -r requirements-dev.txt
@@ -24,6 +26,6 @@ guard:
 
 check: lint test validate-sample guard
 
-# Needs the .venv-train environment, see docs/upstream-toolchain.md.
+# Needs the .venv-train environment, see docs/upstream-toolchain.md. Slow on a cold start.
 upstream-smoke:
-    {{py}} scripts/upstream_smoke.py --help
+    {{train_py}} -u scripts/upstream_smoke.py --workdir build/smoke --steps 40
