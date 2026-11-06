@@ -68,12 +68,12 @@ def test_sample_dataset_validates(tmp_path: Path) -> None:
     assert sample.main() == 0
 
 
-def test_configs_load_and_targets_are_marked_unconfirmed() -> None:
+def test_configs_load_and_targets_are_confirmed() -> None:
     wake = yaml.safe_load((ROOT / "configs" / "wakeword.yaml").read_text(encoding="utf-8"))
     assert [c["phrase"] for c in wake["candidates"]] == ["hey moby"]
     assert "mobil" in wake["hard_negatives"]
     targets = yaml.safe_load((ROOT / "configs" / "targets.yaml").read_text(encoding="utf-8"))
-    assert targets["status"] == "awaiting-owner-confirmation"
+    assert targets["status"] == "confirmed-by-owner"
     assert targets["false_wakes_per_hour_max"] == 1.0
     assert targets["recall_quiet_1m_min"] == 0.90
     assert targets["recall_3m_or_moderate_noise_min"] == 0.75
