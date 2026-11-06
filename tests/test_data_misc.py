@@ -78,4 +78,4 @@ def test_configs_load_and_targets_are_confirmed() -> None:
     assert targets["recall_quiet_1m_min"] == 0.90
     assert targets["recall_3m_or_moderate_noise_min"] == 0.75
     aug = yaml.safe_load((ROOT / "configs" / "augmentation.yaml").read_text(encoding="utf-8"))
-    assert aug["status"] == "planned-w2"
+    assert aug["status"] == "implemented-w2"

@@ -1,9 +1,12 @@
-# Planned augmentation for W2 (not implemented yet). Seeds are fixed and logged.
-status: planned-w2
+# W2 augmentation plan, implemented in src/mobyww/augment (unit-tested; never run on real data
+# or on the robot). Seeds are fixed and logged per call.
+status: implemented-w2
 seed: 2024
 snr_db: {min: 0, max: 30}
 rir:
-  # Only openly licensed sets that pass docs/licenses.md. None is approved yet.
+  # Only openly licensed sets that pass docs/licenses.md can be listed. The code accepts only
+  # names in mobyww.augment.transforms.APPROVED_RIR_SETS (today: but_reverbdb, CC BY 4.0, allowed
+  # with attribution). Empty = no reverberation. Nothing is downloaded or enabled by default.
   sets: []
 gain_db: {min: -12, max: 6}
 time_shift_ms: {min: -100, max: 100}
@@ -12,5 +15,24 @@ device_path:
   # reduced to 16 bit, plus a mild low-pass. These values copy the firmware conversion in
   # moby-firmware main/moby_pcm.h (see docs/integration-contract.md): take the left slot,
   # shift the 32-bit slot right by 16 with no rounding or dither, gain 256/256 with saturation.
+  # pcm16 = clamp(((int32)slot >> 16) * gain_q8 / 256); floor division, no DC removal.
   bit_reduction: {slot_bits: 32, from_bits: 24, to_bits: 16, shift: 16, gain_q8: 256, channel: left}
-  lowpass: {kind: mild, cutoff_hz: TBD}
+  # First 260 ms (13 blocks of 20 ms = 4160 samples at 16 kHz) are dropped on the robot at capture
+  # start (MOBY_PCM_WARMUP_SAMPLES). Helper: mobyww.augment.drop_warmup. Apply it only to audio
+  # captured from a device stream, never to TTS clips.
+  warmup_ms: 260
+  # UNMEASURED. No real INMP441 frame has been captured in this project, so this is an assumption,
+  # not a fit. Reasoning: the owner's reading of the INMP441 datasheet is a 50 Hz high-pass corner
+  # and a response that is flat to about 15 kHz when sampled at the part's normal rates; at our
+  # 16 kHz sampling the useful band ends at the 8 kHz Nyquist, far below that. So the microphone
+  # itself shapes nothing audible in 125 Hz..7.5 kHz (the microWakeWord feature band) and the only
+  # filtering to model is the anti-aliasing roll-off of the decimation near Nyquist. The filter is
+  # therefore deliberately mild: a 33-tap Hamming-window linear-phase FIR whose -6 dB point is at
+  # 7200 Hz (0.45 of the sampling rate, a common decimation-filter edge). Computed response of
+  # this exact filter: 0.0 dB up to 6.5 kHz, -1.2 dB at 6.8 kHz, -3.0 dB at 7 kHz, -6.0 dB at
+  # 7.2 kHz, -13.9 dB at 7.5 kHz, -40 dB at 8 kHz; so it only takes the top of the model's
+  # feature band down. The 50 Hz high-pass is NOT modelled: real recordings and TTS audio contain
+  # no DC or sub-50 Hz content worth shaping, and the firmware applies no DC removal. The
+  # datasheet was not re-read in this session; replace this value after a raw-frame capture from
+  # the robot.
+  lowpass: {kind: mild, cutoff_hz: 7200, taps: 33, measured: false}

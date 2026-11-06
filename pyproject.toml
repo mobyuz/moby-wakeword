@@ -12,7 +12,7 @@ readme = "README.md"
 requires-python = ">=3.12,<3.13"
 license = "GPL-3.0-only"
 license-files = ["LICENSE"]
-dependencies = ["PyYAML==6.0.3"]
+dependencies = ["PyYAML==6.0.3", "numpy==2.5.4"]
 
 [project.optional-dependencies]
 # Real microphone capture. Tests never need it: capture is an injectable interface.
