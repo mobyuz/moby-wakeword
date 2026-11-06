@@ -32,3 +32,4 @@ seeds:
   split: 1337
   augmentation: 2024
   training: 4242
+  synthesis: 3030
