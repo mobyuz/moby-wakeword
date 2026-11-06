@@ -12,7 +12,7 @@ readme = "README.md"
 requires-python = ">=3.12,<3.13"
 license = "GPL-3.0-only"
 license-files = ["LICENSE"]
-dependencies = ["PyYAML==6.0.3"]
+dependencies = ["PyYAML==6.0.3", "numpy==2.5.4"]
 
 [project.optional-dependencies]
 # Real microphone capture. Tests never need it: capture is an injectable interface.
@@ -40,6 +40,9 @@ select = ["E", "F", "I", "B", "UP", "SIM", "S", "PT", "RUF"]
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101", "S105", "S106"]
 "scripts/**" = ["S311", "S603"]
+# A notebook source imports where it needs the package it just installed.
+"scripts/colab/moby_wakeword_colab.py" = ["E402", "S101"]
+"scripts/colab/*.py" = ["S607"]
 
 [tool.mypy]
 python_version = "3.12"

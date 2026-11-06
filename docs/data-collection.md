@@ -9,7 +9,7 @@ Holat: W1 qoralamasi. Bu repoda haqiqiy audio yozilmagan; vosita faqat testlarda
 | Iborani yozdirish (30 sm, 1 m, 3 m; sekin, normal, baland ovoz) | `mobyww-record session` | `wake` |
 | Qat'iy salbiylar ("mobil", "mobile", "mobi", "moby dick", "hey mom", "hey bobby", "hey toby") | `mobyww-record session` | `hard_negative` |
 | Erkin gapirish (uyg'otuvchi iborasiz) | `mobyww-record free` | `negative` |
-| Sintetik (TTS) | W2, hali yo'q | `wake` / `negative` |
+| Sintetik (TTS) | W2: `mobyww.synth` rejasi, Colab'da Piper bilan generatsiya (hali generatsiya qilinmagan) | `wake` / `hard_negative` |
 | Ochiq to'plamlar | faqat [licenses.md](licenses.md) ruxsat bergani | `negative`, `ambient`, `silence` |
 
 Ro'yxat va sonlar `configs/wakeword.yaml` da. "mobil" va "mobile" o'zbek va rus tilida keng tarqalgan; ular hech qachon `wake` bo'lmaydi.
@@ -27,6 +27,14 @@ Ro'yxat va sonlar `configs/wakeword.yaml` da. "mobil" va "mobile" o'zbek va rus 
 ## Manifest
 
 Bir qator bir klip (JSONL). Sxema: [`data/manifest.schema.json`](../data/manifest.schema.json); majburiy maydonlar: `id`, `path`, `sha256`, `label`, `phrase`, `language`, `source`, `source_name`, `license`, `speaker`, `split`, `duration_s`, `sample_rate`. Yozilgan klipda qo'shimcha: `consent_id`, `distance_cm`, `volume`, `room`, `device`, `recorded_on`, `mode`. Yozish vositasi `split` ni `unassigned` qoldiradi, validator uni bo'lishdan keyingina qabul qiladi.
+
+## Ochiq to'plamlar (W2)
+
+`scripts/fetch_open_data.py` faqat [licenses.md](licenses.md) da `allowed` bo'lgan to'plamlarni `D:\moby-cache\wakeword-data` ga (repodan tashqari) yuklaydi: BUT ReverbDB (RIR, 9.3 GB) va `--musan` bayrog'i bilan MUSAN (11 GB; bayroqsiz yuklanmaydi). Davom ettirish, hajm va MD5/SHA-256 tekshiruvi bor. Tekshirilgan: haqiqiy kichik fayl yuklash va uzilgandan keyin davom ettirish; katta arxivlar to'liq yuklanmagan.
+
+### Common Voice o'zbek (egasi qo'lda)
+
+Skript buni yuklamaydi. Mozilla Data Collective hisobsiz `403 Access to this dataset has not been granted` beradi. Egasi: (1) https://mozilladatacollective.com/datasets/cmn29fa4y0150o1073fqww73p ni brauzerda ochadi (Common Voice Scripted Speech 25.0 - Uzbek), kiradi va shartlarni **o'qiydi**; (2) qabul qilsa, arxivni o'zi `D:\moby-cache\wakeword-data\common-voice-uz\` ga yuklaydi; (3) shartlar matni o'qilgach `licenses.md` dagi qator `allowed` ga o'zgartiriladi. Arxiv Colab'ga yuklanmaydi. `python scripts/fetch_open_data.py --common-voice-help` shu ko'rsatmani chiqaradi.
 
 ## Domen farqi (hujjatlashtirilgan xavf)
 

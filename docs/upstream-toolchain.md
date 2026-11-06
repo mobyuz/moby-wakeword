@@ -31,7 +31,8 @@ Yuklab olingan hajm: pip keshi ~620 MB (D:); `.venv-train` ~2.1 GB disk hajmi, s
 2. **Birinchi chaqiruvlar juda sekin.** Sovuq `import tensorflow` bir daqiqadan oshdi, birinchi spektrogramma ~90 s (JIT/kompilyatsiya), keyingilari tez. Bu "osilib qolish" emas; faqat kutish kerak.
 3. **PyPI `audio-metadata` 0.11.1** ishladi; notebook'dagi fork kerak bo'lmadi.
 4. `ai-edge-litert`, `numpy 2.5.4`, `keras 3.15.1` bilan ishladi; upstream chegarasi `numpy>=2.0`, `tensorflow>=2.18`.
-5. Tezlik: o'lchanmagan. 40 qadam CPU'da bir necha daqiqa; to'liq o'qitish (10 000+ qadam, katta ma'lumot) uchun CPU vaqti yoki GPU kerak va hozircha da'vo qilinmaydi.
+5. **Upstream paketi to'liq o'rnatilmaydi.** `microwakeword/audio` va `microwakeword/layers` papkalarida `__init__.py` yo'q, shuning uchun oddiy `pip install git+...` ularni tashlab ketadi (`ModuleNotFoundError: No module named 'microwakeword.audio'`, Linux CI'da ko'rindi). `requirements-train.txt` shu sababli upstream'ni `-e git+...#egg=microwakeword` (editable) bilan o'rnatadi. Editable o'rnatish Windows'da avval ham ishlagan; Linux'da ushbu tuzatishdan keyin modul topilishi faqat `importlib` bilan tekshirildi, to'liq smoke run CI'da qayta ko'riladi.
+6. Tezlik: o'lchanmagan. 40 qadam CPU'da bir necha daqiqa; to'liq o'qitish (10 000+ qadam, katta ma'lumot) uchun CPU vaqti yoki GPU kerak va hozircha da'vo qilinmaydi.
 
 ### Ishlamagan yoki sinalmagan
 
@@ -55,3 +56,25 @@ Skript oxirida `OK: <fayl> <bayt> sha256=...` yoki `FAILED` chiqaradi. Skript pa
 ## Versiyalar (`.venv-train`)
 
 Python 3.12.10; tensorflow 2.20.0; keras 3.15.1; numpy 2.5.4; ai-edge-litert 2.3.0; pymicro-features 2.0.2; microwakeword 0.1.0 (commit `4665173cd35f1cff9a61e06fc427f124766c488e`); audiomentations 0.43.1; mmap_ninja 0.9.0; webrtcvad-wheels 2.0.14.post1; audio-metadata 0.11.1; datasets 3.6.0. To'liq ro'yxat: [`requirements-train.txt`](../requirements-train.txt). Tooling `.venv`: ruff 0.17.3, mypy 2.4.1, pytest 9.2.0, PyYAML 6.0.3.
+
+## W2: Colab daftari (SINALMAGAN, UNTESTED)
+
+Fayllar: [`scripts/colab/moby_wakeword_colab.py`](../scripts/colab/moby_wakeword_colab.py) (`# %%` hujayralari; `scripts/colab/make_ipynb.py` uni `.ipynb` ga aylantiradi), `synthesize_piper.py`, `mww_steps.py`, `train_seeded.py`. **Colab'da hech qachon ishga tushirilmagan.** O'qitish faqat Colab'da (GPU); mahalliy mashinada o'qitish yoki TTS generatsiyasi yo'q.
+
+Oqim: pinlangan `requirements-train.txt` (microWakeWord commit `4665173`) va repo -> `python -m mobyww.synth plan` -> Piper (`piper-tts==1.3.0`, alohida virtualenv, `piper-sample-generator` commit `2971426a`) ovozlari bilan TTS -> 16 kHz -> manifest -> MUSAN (noise, speech) va ixtiyoriy BUT ReverbDB RIR rasmiy URL'lardan (hajm + MD5/SHA-256) -> `mobyww.augment` (qurilma yo'li bilan) -> upstream xususiyatlari -> o'qitish (seed bilan) -> `provenance.json` modelning yoniga (repo va upstream commit, urug'lar, giperparametrlar, manifest xeshi).
+
+Maxfiylik: daftarda yuklash (`files.upload`) va Drive ulash yo'q; `recordings` va `consent` papkalaridan yo'l rad etiladi; haqiqiy yozuvlar (~20 min) lokal qoladi va faqat test to'plami bo'ladi. `tests/test_colab_guard.py` buni tekshiradi (static qidiruv + guard hujayrasini ishga tushirish).
+
+### Nima mahalliy tekshirilgan, nima yo'q
+
+| Qadam | Holat |
+| --- | --- |
+| Augmentatsiya, qurilma yo'li, planner, manifest yozuvchi, fetch skripti, konfig va provenance yordamchilari | mahalliy birlik testlari (Windows, CPU) |
+| Fetch: haqiqiy `read_me.txt` (14 529 bayt) yuklash, uzilgan `.part` dan davom ettirish, pinlangan SHA-256 | mahalliy ishga tushirildi |
+| `mww_steps.build_features` va `mww_steps.train` (`train_seeded.py` orqali) W0 sinus-ohang namunasida (60/10/10 bo'lish papkalari, 40 qadam, 16 filtrli kichik tarmoq, `--seed 4242`) | mahalliy ishga tushirildi (Windows, CPU, 3 min 31 s): chiqish kodi 0, `stream_state_internal_quant.tflite` 27 936 bayt hosil bo'ldi. Namuna nutq emas, upstream chiqargan AUC/FRR raqamlari ma'nosiz va keltirilmaydi |
+| Piper bilan TTS, ovoz yuklash va xesh tekshiruvi (`synthesize_piper.py`) | **sinalmagan** |
+| MUSAN (11 GB) va ReverbDB (9.3 GB) to'liq yuklash va ochish | **sinalmagan** (faqat registr, dry-run va soxta server testlari) |
+| Colab'da `requirements-train.txt` (Windows'dan muzlatilgan) o'rnatish, GPU, TensorFlow 2.20 CUDA | **sinalmagan**; GPU ko'rinmasa daftar to'xtaydi |
+| Butun daftar boshidan oxirigacha | **sinalmagan** |
+
+Ma'lum cheklovlar: Piper ONNX ovozlari urug' qabul qilmaydi, shuning uchun generatsiya qilingan audio qayta tiklanmaydi (job fayli, ovoz xeshlari va manifest xeshi qayd etiladi); GPU yadrolari ham aniq deterministik emas. Sintetik val/test optimistik (`docs/evaluation.md`); daftar aniqlik o'lchamaydi.
