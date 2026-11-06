@@ -204,7 +204,13 @@ def test_extract_blocks_path_traversal(tmp_path: Path) -> None:
 
 
 def test_musan_member_filter() -> None:
-    assert fetch.is_musan_noise_or_licence("musan/noise/free-sound/noise-free-sound-0000.wav")
-    assert fetch.is_musan_noise_or_licence("musan/noise/free-sound/LICENSE")
-    assert fetch.is_musan_noise_or_licence("musan/music/jamendo/ANNOTATIONS")
-    assert not fetch.is_musan_noise_or_licence("musan/music/jamendo/music-jamendo-0000.wav")
+    noise = fetch.musan_member_filter(["noise"])
+    assert noise("musan/noise/free-sound/noise-free-sound-0000.wav")
+    assert noise("musan/noise/free-sound/LICENSE")
+    assert not noise("musan/music/jamendo/music-jamendo-0000.wav")
+    assert not noise("musan/music/jamendo/ANNOTATIONS")  # only the chosen subsets' metadata
+    both = fetch.musan_member_filter(["noise", "speech"])
+    assert both("musan/speech/librivox/speech-librivox-0000.wav")
+    assert not both("musan/music/fma/music-fma-0000.wav")
+    with pytest.raises(fetch.FetchError, match="unknown MUSAN subsets"):
+        fetch.musan_member_filter(["noises"])

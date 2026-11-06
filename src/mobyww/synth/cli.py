@@ -20,7 +20,7 @@ import yaml
 from mobyww.data.manifest import read_manifest
 from mobyww.data.validate import validate
 from mobyww.synth.manifest import build_manifest, write_synthetic_manifest
-from mobyww.synth.plan import PlanParams, build_plan
+from mobyww.synth.plan import SMOKE_PARAMS, PlanParams, build_plan
 from mobyww.synth.spec import JobFileError, job_file_sha256, load_job_file, save_job_file
 
 DEFAULT_CONFIG = Path("configs/wakeword.yaml")
@@ -35,7 +35,8 @@ def _config(path: Path) -> dict[str, Any]:
 
 def _plan(args: argparse.Namespace) -> int:
     config = _config(args.config)
-    params = PlanParams(seed=int(config.get("seeds", {}).get("synthesis", PlanParams.seed)))
+    base = SMOKE_PARAMS if args.smoke else PlanParams()
+    params = replace(base, seed=int(config.get("seeds", {}).get("synthesis", PlanParams.seed)))
     if args.seed is not None:
         params = replace(params, seed=args.seed)
     if args.en_speakers is not None:
@@ -84,6 +85,7 @@ def main(argv: list[str] | None = None) -> int:
     plan.add_argument("--out", type=Path, required=True)
     plan.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     plan.add_argument("--seed", type=int)
+    plan.add_argument("--smoke", action="store_true", help="a tiny plan to check the pipeline")
     plan.add_argument("--en-speakers", type=int, help="LibriTTS-R speakers to use (default 100)")
     plan.set_defaults(func=_plan)
 

@@ -80,6 +80,16 @@ class PlanParams:
     noise_scale_ws: tuple[float, ...] = DEFAULT_NOISE_SCALE_WS
 
 
+# A tiny plan for checking the pipeline end to end (a couple of hundred clips).
+SMOKE_PARAMS = PlanParams(
+    libritts_speakers=4,
+    wake_clips_per_speaker_variant=2,
+    hard_negative_clips_per_speaker_text=1,
+    ru_wake_clips_per_variant=4,
+    ru_hard_negative_clips_per_text=2,
+)
+
+
 def _slug(text: str) -> str:
     out = []
     for ch in text.lower():

@@ -25,7 +25,7 @@ import sys
 import tarfile
 import urllib.error
 import urllib.request
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -258,9 +258,25 @@ def is_rir_wav(name: str) -> bool:
     return name.lower().endswith(".wav") and "RIR" in parts[:-1]
 
 
-def is_musan_noise_or_licence(name: str) -> bool:
-    low = name.lower()
-    return "/noise/" in low or low.endswith(("license", "readme", "annotations"))
+MUSAN_SUBSETS = ("noise", "speech", "music")
+
+
+def musan_member_filter(subsets: Sequence[str]) -> Callable[[str], bool]:
+    """Accept MUSAN files of the given subsets, plus the LICENSE, README and ANNOTATIONS files.
+
+    The per-directory LICENSE files carry the file-by-file attribution, so they are always taken.
+    """
+    unknown = sorted(set(subsets) - set(MUSAN_SUBSETS))
+    if unknown:
+        raise FetchError(f"unknown MUSAN subsets {unknown}; choose from {MUSAN_SUBSETS}")
+    wanted = tuple(f"/{s}/" for s in subsets)
+
+    def accept(name: str) -> bool:
+        low = name.lower()
+        in_subset = any(w in low for w in wanted)
+        return in_subset and low.endswith((".wav", "license", "readme", "annotations"))
+
+    return accept
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -277,9 +293,10 @@ def main(argv: list[str] | None = None) -> int:
         "--extract-rir", action="store_true", help="after download, extract only RIR/*.wav"
     )
     parser.add_argument(
-        "--extract-musan-noise",
-        action="store_true",
-        help="after download, extract MUSAN noise/ plus LICENSE, README and ANNOTATIONS files",
+        "--extract-musan",
+        metavar="SUBSETS",
+        help="after download, extract these MUSAN subsets (comma list of noise,speech,music) "
+        "with their LICENSE, README and ANNOTATIONS files",
     )
     parser.add_argument("--common-voice-help", action="store_true")
     args = parser.parse_args(argv)
@@ -304,8 +321,9 @@ def main(argv: list[str] | None = None) -> int:
             if dataset.key == "reverbdb_rir" and args.extract_rir:
                 n = extract(path, dest / "but_reverbdb" / "rir", is_rir_wav)
                 print(f"reverbdb_rir: extracted {n} RIR files")
-            if dataset.key == "musan" and args.extract_musan_noise:
-                n = extract(path, dest / "musan" / "extracted", is_musan_noise_or_licence)
+            if dataset.key == "musan" and args.extract_musan:
+                accept = musan_member_filter(args.extract_musan.split(","))
+                n = extract(path, dest / "musan" / "extracted", accept)
                 print(f"musan: extracted {n} files")
     except FetchError as exc:
         print(f"error: {exc}", file=sys.stderr)

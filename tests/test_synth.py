@@ -292,3 +292,11 @@ def test_cli_plan_then_manifest(tmp_path: Path, capsys: pytest.CaptureFixture[st
         )
         == 2
     )
+
+
+def test_cli_smoke_plan_is_small(tmp_path: Path) -> None:
+    config = ROOT / "configs" / "wakeword.yaml"
+    big, small = tmp_path / "big.json", tmp_path / "small.json"
+    assert synth_cli.main(["plan", "--out", str(big), "--config", str(config)]) == 0
+    assert synth_cli.main(["plan", "--out", str(small), "--config", str(config), "--smoke"]) == 0
+    assert load_job_file(small).total_clips < 200 < load_job_file(big).total_clips
