@@ -137,7 +137,9 @@ class ClipSpec:
     length_scale: float
     noise_scale: float
     noise_scale_w: float
-    torch_seed: int  # seed for the generator's noise; the same clip always gets the same one
+    # Reserved. Piper ONNX voices take no seed, so the audio itself is NOT reproducible; the job
+    # file, the voice hashes and the manifest hash are what we record.
+    rng_seed: int
 
 
 @dataclass(frozen=True)
@@ -197,7 +199,7 @@ def expand_job(job: Job, seed: int) -> list[ClipSpec]:
                 length_scale=length,
                 noise_scale=noise,
                 noise_scale_w=noise_w,
-                torch_seed=_digest_int(f"{seed}:{clip_id}", 31),
+                rng_seed=_digest_int(f"{seed}:{clip_id}", 31),
             )
         )
     return clips

@@ -142,12 +142,12 @@ def test_expand_job_is_deterministic_and_uses_the_grid() -> None:
         assert clip.length_scale in job.length_scales
         assert clip.noise_scale in job.noise_scales
         assert clip.noise_scale_w in job.noise_scale_ws
-        assert 0 <= clip.torch_seed < 2**31
+        assert 0 <= clip.rng_seed < 2**31
     other = expand_job(job, plan.seed + 1)
-    assert [c.torch_seed for c in other] != [c.torch_seed for c in a]
+    assert [c.rng_seed for c in other] != [c.rng_seed for c in a]
     big = expand_job(replace(job, count=50), plan.seed)
     assert len({c.clip_id for c in big}) == 50
-    assert len({c.torch_seed for c in big}) == 50
+    assert len({c.rng_seed for c in big}) == 50
 
 
 def test_clip_ids_are_unique_across_the_whole_plan() -> None:
