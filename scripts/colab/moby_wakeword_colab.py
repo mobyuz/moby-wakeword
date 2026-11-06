@@ -87,7 +87,10 @@ def sh(command: list[str], *, cwd: Path | None = None, check: bool = True) -> No
 assert_colab()
 print("python", platform.python_version(), platform.platform())
 if sys.version_info[:2] != (3, 12):
-    print("WARNING: the pinned stack was only proven on Python 3.12 (docs/upstream-toolchain.md).")
+    print(
+        "WARNING: the pinned stack was only proven on Python 3.12 (docs/upstream-toolchain.md). "
+        "Colab currently gives 3.13, which is unproven here; expect version-related breakage."
+    )
 gpu = subprocess.run(["nvidia-smi", "-L"], capture_output=True, text=True, check=False)
 print(gpu.stdout.strip() or "no NVIDIA GPU visible")
 if REQUIRE_GPU and not gpu.stdout.strip():
@@ -111,7 +114,11 @@ print("repository commit:", repo_commit)
 
 # requirements-train.txt is frozen from a Windows run; unknown Linux/Colab conflicts may appear.
 sh([sys.executable, "-m", "pip", "install", "-r", "requirements-train.txt"], cwd=REPO)
-sh([sys.executable, "-m", "pip", "install", "-e", ".", "--no-deps"], cwd=REPO)
+# Colab ships Python 3.13 while pyproject.toml pins 3.12, so the version gate is bypassed here only.
+sh(
+    [sys.executable, "-m", "pip", "install", "-e", ".", "--no-deps", "--ignore-requires-python"],
+    cwd=REPO,
+)
 
 import importlib
 import json
@@ -154,7 +161,7 @@ if not PIPER_VENV.exists():
     sh([sys.executable, "-m", "venv", str(PIPER_VENV)])
 PIPER_PY = str(PIPER_VENV / "bin" / "python")
 sh([PIPER_PY, "-m", "pip", "install", f"piper-tts=={PIPER_TTS_VERSION}", "PyYAML==6.0.3"])
-sh([PIPER_PY, "-m", "pip", "install", "-e", str(REPO), "--no-deps"])
+sh([PIPER_PY, "-m", "pip", "install", "-e", str(REPO), "--no-deps", "--ignore-requires-python"])
 
 # %% [markdown]
 # ## 5. Plan the synthesis jobs (deterministic, from configs/wakeword.yaml)
