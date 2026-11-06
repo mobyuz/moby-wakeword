@@ -31,7 +31,8 @@ Yuklab olingan hajm: pip keshi ~620 MB (D:); `.venv-train` ~2.1 GB disk hajmi, s
 2. **Birinchi chaqiruvlar juda sekin.** Sovuq `import tensorflow` bir daqiqadan oshdi, birinchi spektrogramma ~90 s (JIT/kompilyatsiya), keyingilari tez. Bu "osilib qolish" emas; faqat kutish kerak.
 3. **PyPI `audio-metadata` 0.11.1** ishladi; notebook'dagi fork kerak bo'lmadi.
 4. `ai-edge-litert`, `numpy 2.5.4`, `keras 3.15.1` bilan ishladi; upstream chegarasi `numpy>=2.0`, `tensorflow>=2.18`.
-5. Tezlik: o'lchanmagan. 40 qadam CPU'da bir necha daqiqa; to'liq o'qitish (10 000+ qadam, katta ma'lumot) uchun CPU vaqti yoki GPU kerak va hozircha da'vo qilinmaydi.
+5. **Upstream paketi to'liq o'rnatilmaydi.** `microwakeword/audio` va `microwakeword/layers` papkalarida `__init__.py` yo'q, shuning uchun oddiy `pip install git+...` ularni tashlab ketadi (`ModuleNotFoundError: No module named 'microwakeword.audio'`, Linux CI'da ko'rindi). `requirements-train.txt` shu sababli upstream'ni `-e git+...#egg=microwakeword` (editable) bilan o'rnatadi. Editable o'rnatish Windows'da avval ham ishlagan; Linux'da ushbu tuzatishdan keyin modul topilishi faqat `importlib` bilan tekshirildi, to'liq smoke run CI'da qayta ko'riladi.
+6. Tezlik: o'lchanmagan. 40 qadam CPU'da bir necha daqiqa; to'liq o'qitish (10 000+ qadam, katta ma'lumot) uchun CPU vaqti yoki GPU kerak va hozircha da'vo qilinmaydi.
 
 ### Ishlamagan yoki sinalmagan
 

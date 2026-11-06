@@ -104,4 +104,4 @@ wrapt==1.17.3
 xxhash==4.0.2
 yarl==1.25.1
 PyYAML==6.0.3
-microwakeword @ git+https://github.com/OHF-Voice/micro-wake-word.git@4665173cd35f1cff9a61e06fc427f124766c488e
+-e git+https://github.com/OHF-Voice/micro-wake-word.git@4665173cd35f1cff9a61e06fc427f124766c488e#egg=microwakeword
