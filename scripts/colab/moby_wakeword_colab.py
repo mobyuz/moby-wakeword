@@ -169,8 +169,12 @@ assert head == PINNED_PIPER_GENERATOR_COMMIT, head
 assert f"piper-tts=={PIPER_TTS_VERSION}" in (GEN / "pyproject.toml").read_text(encoding="utf-8")
 
 PIPER_VENV = WORK / "venv-piper"
-if not PIPER_VENV.exists():
-    sh([sys.executable, "-m", "venv", str(PIPER_VENV)])
+if not (PIPER_VENV / "bin" / "python").exists():
+    shutil.rmtree(PIPER_VENV, ignore_errors=True)  # a half-made venv from a failed run
+    # `python3 -m venv` fails on Colab's Ubuntu image (no ensurepip / python3-venv), so virtualenv
+    # is used; it ships its own pip and needs no system package.
+    sh([sys.executable, "-m", "pip", "install", "virtualenv"])
+    sh([sys.executable, "-m", "virtualenv", str(PIPER_VENV)])
 PIPER_PY = str(PIPER_VENV / "bin" / "python")
 sh([PIPER_PY, "-m", "pip", "install", f"piper-tts=={PIPER_TTS_VERSION}", "PyYAML==6.0.3"])
 sh([PIPER_PY, "-m", "pip", "install", "-e", str(REPO), "--no-deps", "--ignore-requires-python"])
@@ -356,11 +360,23 @@ groups = {
     "ambient": ambient,
 }
 feature_sets = []
+# Synthetic clips get no test split on purpose (the real test set is the owner's local recording),
+# but upstream's final evaluation divides by the number of test positives and crashes on none. So
+# validation clips are copied into test/ for upstream's own diagnostics only. Those numbers say
+# nothing about accuracy; provenance records the copy.
+TEST_IS_VALIDATION_COPY = False
 for name, group in groups.items():
     if not group:
         print("skipping empty set", name)
         continue
-    print(name, organize_by_split(group, DATA, SETS / name))
+    split_counts = organize_by_split(group, DATA, SETS / name)
+    print(name, split_counts)
+    if split_counts["validation"] and not split_counts["test"]:
+        (SETS / name / "test").mkdir(parents=True, exist_ok=True)
+        for clip in (SETS / name / "validation").glob("*.wav"):
+            shutil.copy2(clip, SETS / name / "test" / clip.name)
+        TEST_IS_VALIDATION_COPY = True
+        print(name, "test/ is a copy of validation/ (upstream diagnostics only, not accuracy)")
     counts = mww_steps.build_features(
         SETS / name, FEATURES / name, ambient=name in {"speech", "ambient"}
     )
@@ -430,6 +446,7 @@ provenance = build_provenance(
             "use_musan": USE_MUSAN,
             "use_rir": USE_RIR,
             "copies": AUGMENT_COPIES,
+            "upstream_test_is_validation_copy": TEST_IS_VALIDATION_COPY,
         },
         "piper": {"tts": PIPER_TTS_VERSION, "generator_commit": PINNED_PIPER_GENERATOR_COMMIT},
         "job_file_sha256": job_file_sha256(job_file),
