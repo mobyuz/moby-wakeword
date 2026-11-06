@@ -127,3 +127,56 @@ def test_provenance_records_hashes_seeds_and_no_accuracy(tmp_path: Path) -> None
     assert prov["colab"] == {"untested": True}
     path = write_provenance(tmp_path / "out", prov)
     assert json.loads(path.read_text(encoding="utf-8")) == prov
+
+
+def _git_repo(folder: Path) -> str:
+    import shutil
+    import subprocess
+
+    git = shutil.which("git")
+    if git is None:
+        pytest.skip("git is not installed")
+    folder.mkdir()
+    for args in (
+        ["init", "-q", "-b", "main"],
+        [
+            "-c",
+            "user.name=t",
+            "-c",
+            "user.email=t@example.invalid",
+            "commit",
+            "-q",
+            "--allow-empty",
+            "-m",
+            "x",
+        ],
+    ):
+        subprocess.run([git, *args], cwd=folder, check=True, capture_output=True)  # noqa: S603
+    head = subprocess.run(  # noqa: S603
+        [git, "rev-parse", "HEAD"], cwd=folder, check=True, capture_output=True, text=True
+    )
+    return head.stdout.strip()
+
+
+def test_commit_from_direct_url_prefers_the_recorded_vcs_commit() -> None:
+    from mobyww.train.provenance import commit_from_direct_url
+
+    text = json.dumps({"url": "https://example.invalid/r.git", "vcs_info": {"commit_id": "abc123"}})
+    assert commit_from_direct_url(text) == "abc123"
+
+
+def test_commit_from_direct_url_reads_head_of_an_editable_checkout(tmp_path: Path) -> None:
+    from mobyww.train.provenance import commit_from_direct_url
+
+    head = _git_repo(tmp_path / "checkout")
+    text = json.dumps({"url": (tmp_path / "checkout").as_uri(), "dir_info": {"editable": True}})
+    assert commit_from_direct_url(text) == head
+
+
+def test_commit_from_direct_url_gives_none_when_it_cannot_know(tmp_path: Path) -> None:
+    from mobyww.train.provenance import commit_from_direct_url
+
+    plain = tmp_path / "not-git"
+    plain.mkdir()
+    assert commit_from_direct_url(json.dumps({"url": plain.as_uri(), "dir_info": {}})) is None
+    assert commit_from_direct_url(json.dumps({"url": "https://example.invalid/x.whl"})) is None

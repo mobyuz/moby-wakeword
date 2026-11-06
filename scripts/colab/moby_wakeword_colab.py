@@ -121,15 +121,27 @@ sh(
 )
 
 import importlib
-import json
-from importlib import metadata
 
 importlib.invalidate_caches()
 sys.path.insert(0, str(REPO / "src"))
 sys.path.insert(0, str(REPO / "scripts" / "colab"))
 
-direct = json.loads(metadata.distribution("microwakeword").read_text("direct_url.json") or "{}")
-upstream_commit = direct.get("vcs_info", {}).get("commit_id")
+import json
+from importlib import metadata
+from urllib.parse import urlparse
+from urllib.request import url2pathname
+
+# An editable install (-e git+...) keeps no commit in pip's metadata, only the checkout folder as a
+# file:// URL, so the commit is the git HEAD of that folder. (Same logic as
+# mobyww.train.provenance.commit_from_direct_url, inlined so this cell needs no newer repo code.)
+_direct = json.loads(metadata.distribution("microwakeword").read_text("direct_url.json") or "{}")
+upstream_commit = _direct.get("vcs_info", {}).get("commit_id")
+if not upstream_commit and urlparse(_direct.get("url", "")).scheme == "file":
+    _folder = url2pathname(urlparse(_direct["url"]).path)
+    _head = subprocess.run(
+        ["git", "-C", _folder, "rev-parse", "HEAD"], capture_output=True, text=True, check=False
+    )
+    upstream_commit = _head.stdout.strip() or None
 print("microwakeword commit:", upstream_commit)
 assert upstream_commit == PINNED_UPSTREAM_COMMIT, "microwakeword is not the pinned commit"
 
