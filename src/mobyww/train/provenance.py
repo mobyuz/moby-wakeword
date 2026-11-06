@@ -15,6 +15,8 @@ from collections.abc import Sequence
 from importlib import metadata
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
+from urllib.request import url2pathname
 
 PACKAGES = (
     "tensorflow",
@@ -53,17 +55,41 @@ def manifest_hash(paths: Sequence[Path]) -> str:
     return sha256_bytes("\n".join(sorted(lines)).encode("utf-8"))
 
 
+def commit_from_direct_url(text: str) -> str | None:
+    """The git commit named by a pip `direct_url.json`.
+
+    A regular VCS install records `vcs_info.commit_id`. An editable VCS install (`-e git+...`)
+    records only the checkout folder as a `file://` URL, so the commit is read from that folder's
+    git HEAD. A folder that is not a git checkout gives None.
+    """
+    data = json.loads(text)
+    commit = data.get("vcs_info", {}).get("commit_id")
+    if commit:
+        return str(commit)
+    parsed = urlparse(str(data.get("url", "")))
+    if parsed.scheme != "file":
+        return None
+    folder = Path(url2pathname(parsed.path))
+    try:
+        out = subprocess.run(  # noqa: S603
+            ["git", "-C", str(folder), "rev-parse", "HEAD"],  # noqa: S607
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    head = out.stdout.strip()
+    return head or None
+
+
 def upstream_commit(distribution: str = "microwakeword") -> str | None:
-    """The git commit microWakeWord was installed from (pip's direct_url.json), if recorded."""
+    """The git commit microWakeWord was installed from (pip's direct_url.json), if known."""
     try:
         text = metadata.distribution(distribution).read_text("direct_url.json")
     except metadata.PackageNotFoundError:
         return None
-    if not text:
-        return None
-    info = json.loads(text).get("vcs_info", {})
-    commit = info.get("commit_id")
-    return str(commit) if commit else None
+    return commit_from_direct_url(text) if text else None
 
 
 def git_state(repo: Path) -> dict[str, Any]:
